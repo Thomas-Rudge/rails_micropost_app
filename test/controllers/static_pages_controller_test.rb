@@ -4,7 +4,7 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
   test "should get home" do
     get root_url
     assert_response :success
-    assert_select "title", "Home | Micropost App"
+    assert_select "title", "Micropost App"
   end
 
   test "should get help" do
