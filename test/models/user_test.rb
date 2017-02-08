@@ -2,10 +2,13 @@ require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
   def setup
-    @user = User.new(name: "Example User", email: "user@example.com")
+    @user = User.new(name: "Example User",
+                     email: "user@example.com",
+                     password: "foobar",
+                     password_confirmation: "foobar")
   end
 
-  test "should be valid" do
+  test "base user should be valid" do
     assert @user.valid?
   end
 
@@ -13,7 +16,7 @@ class UserTest < ActiveSupport::TestCase
     @user.name = "     "
 
     assert_not @user.valid?
-    assert @user.errors.details[:name].length == 1 &&
+    assert @user.errors.details[:name] &&
            @user.errors.details[:name][0][:error] == :blank
   end
 
@@ -21,14 +24,15 @@ class UserTest < ActiveSupport::TestCase
     @user.name = "Q"
 
     assert_not @user.valid?
-    assert @user.errors.details[:name].length == 1 &&
+    assert @user.errors.details[:name] &&
            @user.errors.details[:name][0][:error] == :too_short
   end
 
   test "name should not be too long" do
     @user.name = "Q" * 51
+
     assert_not @user.valid?
-    assert @user.errors.details[:name].length == 1 &&
+    assert @user.errors.details[:name] &&
            @user.errors.details[:name][0][:error] == :too_long
   end
 
@@ -39,7 +43,7 @@ class UserTest < ActiveSupport::TestCase
       @user.name = name
 
       assert_not @user.valid?, "#{name.inspect} should not be valid"
-      assert @user.errors.details[:name].length == 1 &&
+      assert @user.errors.details[:name] &&
              @user.errors.details[:name][0][:error] == :invalid
     end
   end
@@ -63,7 +67,7 @@ class UserTest < ActiveSupport::TestCase
     @user.email = "#{"a"*240}@somedomain.com"
 
     assert_not @user.valid?
-    assert @user.errors.details[:email].length == 1 &&
+    assert @user.errors.details[:email] &&
            @user.errors.details[:email][0][:error] == :too_long
   end
 
@@ -73,6 +77,7 @@ class UserTest < ActiveSupport::TestCase
 
     valid_addresses.each do |address|
       @user.email = address
+
       assert @user.valid?, "#{address.inspect} should be valid"
     end
   end
@@ -83,9 +88,9 @@ class UserTest < ActiveSupport::TestCase
 
     invalid_addresses.each do |address|
       @user.email = address
-      assert_not @user.valid?, "#{address.inspect} should not be valid"
 
-      assert @user.errors.details[:email].length == 1 &&
+      assert_not @user.valid?, "#{address.inspect} should not be valid"
+      assert @user.errors.details[:email] &&
              @user.errors.details[:email][0][:error] == :invalid
     end
   end
@@ -97,5 +102,37 @@ class UserTest < ActiveSupport::TestCase
     @user.reload
 
     assert_equal @user.email, test_email.downcase
+  end
+
+  test "password must not be blank" do
+    @user.password = @user.password_confirmation = " " * 10
+
+    assert_not @user.valid?
+    assert @user.errors.details[:password] &&
+           @user.errors.details[:password][0][:error] == :blank
+  end
+
+  test "password must not be too short" do
+    @user.password = @user.password_confirmation = "x" * 5
+
+    assert_not @user.valid?
+    assert @user.errors.details[:password] &&
+           @user.errors.details[:password][0][:error] == :too_short
+  end
+
+  test "password should require a confirmation" do
+    @user.password_confirmation = nil
+
+    assert_not @user.valid?
+    assert @user.errors.details[:password_confirmation] &&
+           @user.errors.details[:password_confirmation][0][:error] == :blank
+  end
+
+  test "password confirmation should be the same as password" do
+    @user.password_confirmation = "barfoo"
+
+    assert_not @user.valid?
+    assert @user.errors.details[:password_confirmation] &&
+           @user.errors.details[:password_confirmation][0][:error] == :confirmation
   end
 end
