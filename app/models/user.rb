@@ -13,11 +13,16 @@ class User < ApplicationRecord
                     length: { maximum: 254 },
                     format: { with: EMAIL_REGEX }
 
+  has_secure_password
   validates :password, confirmation: true,
                        presence: true,
                        length: { minimum: 6 }
 
   validates :password_confirmation, presence: true
 
-  has_secure_password
+  def User.digest(string)
+    cost = ActiveModel::SecurePassword.min_cost ? BCrypt::Engine::MIN_COST :
+                                                  BCrypt::Engine.cost
+    BCrypt::Password.create(string, cost: cost)
+  end
 end
