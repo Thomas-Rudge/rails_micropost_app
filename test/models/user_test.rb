@@ -1,6 +1,7 @@
 require 'test_helper'
 
 class UserTest < ActiveSupport::TestCase
+
   def setup
     @user = User.new(name: "Example User",
                      email: "user@example.com",
@@ -134,5 +135,9 @@ class UserTest < ActiveSupport::TestCase
     assert_not @user.valid?
     assert @user.errors.details[:password_confirmation] &&
            @user.errors.details[:password_confirmation][0][:error] == :confirmation
+  end
+
+  test "authenticated? should return false for a user with nil digest" do
+    assert_not @user.authenticated?('')
   end
 end
