@@ -1,8 +1,9 @@
 Rails.application.routes.draw do
-  resources :users, except: [:new, :create]
+  resources :users, except: [:new, :create, :update]
 
-  get  '/signup',  to: 'users#new'
-  post '/signup',  to: 'users#create'
+  get   '/signup',   to: 'users#new'
+  post  '/signup',   to: 'users#create'
+  patch '/users/:id', to: 'users#update', as: 'update_user'
 
   get '/help',    to: 'static_pages#help'
   get '/about',   to: 'static_pages#about'
