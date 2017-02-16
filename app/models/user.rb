@@ -1,6 +1,6 @@
 class User < ApplicationRecord
 
-  attr_accessor :remember_token
+  attr_accessor :remember_token, :activation_token
 
   EMAIL_REGEX = /\A([\w+\-].?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
   NAME_REGEX  = /[\t|\r|\n|\f]+/m
@@ -44,9 +44,19 @@ class User < ApplicationRecord
     update_attribute(:remember_digest, nil)
   end
 
-  def authenticated?(remember_token)
-    return false if remember_token.blank?
-    BCrypt::Password.new(remember_digest).is_password?(remember_token)
+  def authenticated?(token, attribute)
+    digest = send("#{attribute}_digest")
+    return false if token.blank? || digest.nil?
+    BCrypt::Password.new(digest).is_password?(token)
+  end
+
+  def activate
+    update_columns(activated:    true,
+                   activated_at: Time.zone.now)
+  end
+
+  def send_activation_email
+    UserMailer.account_activation(self).deliver_now
   end
 
   private
@@ -56,7 +66,7 @@ class User < ApplicationRecord
     end
 
     def create_activation_digest
-      activation_token  = User.new_token
-      self.activation_digest = User.digest(activation_token)
+      self.activation_token  = User.new_token
+      self.activation_digest = User.digest(self.activation_token)
     end
 end

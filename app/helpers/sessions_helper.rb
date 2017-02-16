@@ -15,7 +15,7 @@ module SessionsHelper
     elsif (user_id = cookies.signed[:user_id])
       user = User.find_by(id: user_id)
 
-      if user && user.authenticated?(cookies[:remember_token])
+      if user && user.authenticated?(cookies[:remember_token], :remember)
         log_in user
         @current_user = user
       else # User might hold a cookie which is no longer valid

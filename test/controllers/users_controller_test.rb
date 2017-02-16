@@ -3,8 +3,8 @@ require 'test_helper'
 class UsersControllerTest < ActionDispatch::IntegrationTest
 
   def setup
-    @user       = users(:mr_example)
-    @other_user = users(:archer)
+    @user          = users(:mr_example)
+    @other_user    = users(:archer)
   end
 
   test "should get new" do
@@ -75,8 +75,8 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
 
     follow_redirect!
 
-    assert is_logged_in?
-    assert_not is_admin?
+    assert_not is_logged_in?
+    assert_not is_admin?(email: "user@example.com")
   end
 
   test "should not allow the admin attribute to be edited via the web" do
@@ -103,6 +103,16 @@ class UsersControllerTest < ActionDispatch::IntegrationTest
     assert_no_difference 'User.count' do
       delete user_path(@user)
     end
+    assert_redirected_to root_url
+  end
+
+  test "should not be able to view an inactive users profile" do
+    log_in_as(@user)
+    @other_user.activated = false
+    @other_user.save
+
+    get user_path(@other_user)
+
     assert_redirected_to root_url
   end
 end

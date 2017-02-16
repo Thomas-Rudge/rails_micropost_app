@@ -33,7 +33,11 @@ class ActionDispatch::IntegrationTest
     delete logout_path
   end
 
-  def is_admin?
-    User.find(session[:user_id]).admin?
+  def is_admin?(email: nil)
+    if email
+      User.find_by(email: email).admin?
+    else
+      User.find(session[:user_id]).admin?
+    end
   end
 end
