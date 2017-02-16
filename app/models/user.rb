@@ -5,7 +5,8 @@ class User < ApplicationRecord
   EMAIL_REGEX = /\A([\w+\-].?)+@[a-z\d\-]+(\.[a-z]+)*\.[a-z]+\z/i
   NAME_REGEX  = /[\t|\r|\n|\f]+/m
 
-  before_save { email.downcase! }
+  before_save   :downcase_email
+  before_create :create_activation_digest
 
   validates :name,  presence: true,
                     length: { in: 2..50 },
@@ -47,4 +48,15 @@ class User < ApplicationRecord
     return false if remember_token.blank?
     BCrypt::Password.new(remember_digest).is_password?(remember_token)
   end
+
+  private
+
+    def downcase_email
+      self.email.downcase!
+    end
+
+    def create_activation_digest
+      activation_token  = User.new_token
+      self.activation_digest = User.digest(activation_token)
+    end
 end
